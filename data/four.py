@@ -1,5 +1,4 @@
-# 4월 16일 ~ 
-
+# 4월 16일 / 5월 7일
 import pygame 
 import os 
 
@@ -28,11 +27,10 @@ screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
 # Screen Update
 clock = pygame.time.Clock()
 
-# Setting a path
-current_path = os.path.dirname(__file__)
-asset_path = os.path.join(current_path, 'assets')
+# 원 크기 및 색상 설정
+circle_radius = 30
+circle_color = Red
 
-image = pygame.image.load(os.path.join(asset_path, 'dd.png'))
 key_x = int(SCREEN_WIDTH / 2)
 key_y = int(SCREEN_HEIGHT / 2)
 key_dx = 0
@@ -60,9 +58,9 @@ while not done:
 
         # 키를 뗐을 때
         if event.type == pygame.KEYUP:
-            if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+            if event.key == pygame.K_LEFT or event.key == pygame.K_RIGHT:
                 key_dx = 0
-            if event.key in [pygame.K_UP, pygame.K_DOWN]:
+            if event.key == pygame.K_UP or event.key == pygame.K_DOWN:
                 key_dy = 0
 
     # 게임 로직 구간
@@ -72,8 +70,8 @@ while not done:
     # 화면 삭제 및 채우기
     screen.fill(Black)
 
-    # 이미지 그리기
-    screen.blit(image, (key_x, key_y))
+    # 원 그리기
+    pygame.draw.circle(screen, circle_color, (key_x, key_y), circle_radius)
 
     # 화면 업데이트
     pygame.display.flip()
