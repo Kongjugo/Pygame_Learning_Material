@@ -10,18 +10,6 @@ PyGame은 파이썬으로 작성된 게임 개발 라이브러리입니다. 이 
 
 ---
 
-## 🗂️ 폴더 구조
-Pygame_Learning_Material/
-├── Examples/ # 다양한 PyGame 예제 코드
-│ ├── move_character.py
-│ ├── draw_shapes.py
-│ └── ...
-├── materials/ # 수업 자료 및 참고 파일 (슬라이드, 이미지 등)
-├── basic_code.py # 가장 기본적인 PyGame 게임 루프 코드
-└── README.md # 프로젝트 설명서
-
----
-
 ## 🧠 학습 내용
 
 - PyGame 설치 및 개발 환경 구성
@@ -31,33 +19,6 @@ Pygame_Learning_Material/
 - 이미지 그리기 및 충돌 감지
 - 사운드 삽입
 - 간단한 2D 게임 제작
-
-좋습니다! 작성해주신 내용은 이미 훌륭하게 구성되어 있고, 그에 이어서 README의 나머지 부분을 자연스럽게 마무리할 수 있도록 아래에 이어드립니다:
-
-````markdown
----
-
-## 🚀 시작하기
-
-### 1. PyGame 설치
-
-PyGame이 설치되어 있지 않다면, 아래 명령어를 사용하여 설치할 수 있습니다:
-
-```bash
-pip install pygame
-````
-
-### 2. 기본 코드 실행
-
-저장소의 `basic_code.py` 파일을 실행하여 PyGame의 기본 구조를 확인해보세요:
-
-```bash
-python basic_code.py
-```
-
-### 3. 예제 실습
-
-`Examples/` 폴더에 있는 다양한 예제를 실행하고 직접 수정해 보며 PyGame의 기능을 익혀보세요.
 
 ---
 
