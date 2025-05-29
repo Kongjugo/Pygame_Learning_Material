@@ -109,4 +109,13 @@ def update_game():
         computer.x = computer.x + 3
     
     # 공이 플레이어/컴퓨터에 부딪혔을 때
-    if ball.colliderect
+    if ball.colliderect(player):
+        ball_dy = ball_dy * (-1)
+        ball_dx = random.randint(-5, 5)
+        ball.bottom = player.top
+        ping_sound.play()
+
+    if ball.colliderect(computer):
+        ball_dy = ball_dy * (-1)
+        ball.top = computer.bottom
+        pong_sound.play()
