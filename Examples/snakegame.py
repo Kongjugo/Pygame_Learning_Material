@@ -1,131 +1,179 @@
 import pygame
-from time import sleep
+import os
 import random
 
-# 화면 크기 정의
+# 게임 화면 설정
 SCREEN_WIDTH = 800
-SCREEN_HEIGHT = 600
+SCREEN_HEGIHT = 600
 
-# 게임 화면 분할
-GRID_SIZE = 20
-GRID_WIDTH = SCREEN_WIDTH // GRID_SIZE
-GRID_HEIGHT = SCREEN_HEIGHT // GRID_SIZE
-
-# 방향 변수
-UP = (0, -1)
-DOWN = (0, 1)
-RIGHT = (1, 0)
-LEFT = (-1, 0)
-
-# 색상
+# 색상 지정
 WHITE = (255, 255, 255)
-GRAY = (125, 125, 125)
-GREEN = (0, 255, 0)
+BLACK = (0, 0, 0)
+BLUE = (0, 0, 255)
+RED = (255, 0, 0)
+ORANGE = (250, 170, 70)
 
-# 초기화
+# FPS 설정 (프레임 설정)
+FPS = 60
+
+# 초기화 
 pygame.init()
-screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEIGHT))
-pygame.display.set_caption("snake_game")
+pygame.font.init()
+pygame.mixer.init()
+
+# 파일 경로 설정
+current_path = os.path.dirname(__file__)
+assets_path = os.path.join(current_path, 'assets')
+
+# 배경음악 및 효과음 설정
+pygame.mixer.music.load(os.path.join(assets_path, 'bgm.mp3'))
+pygame.mixer.music.set_volume(0.5)
+pygame.mixer.music.play(-1)  # -1은 무한 반복
+
+ping_sound = pygame.mixer.Sound(os.path.join(assets_path, 'ping.mp3'))
+pong_sound = pygame.mixer.Sound(os.path.join(assets_path, 'pong.mp3'))
+
+font = pygame.font.Font(os.path.join(assets_path, 'Pretendard-Medium.otf'), 48)
+
+# 화면 설정
+screen = pygame.display.set_mode((SCREEN_WIDTH, SCREEN_HEGIHT))
+pygame.display.set_caption("ping pong game")
 clock = pygame.time.Clock()
 
-# 전역 변수
-snake = [(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]
-direction = random.choice([UP, DOWN, RIGHT, LEFT])
-length = 2
-feed_pos = (0, 0)
-speed = 60
+# 기타 변수 설정
+ball = pygame.Rect(SCREEN_WIDTH // 2, SCREEN_HEGIHT // 2, 12, 12)
+ball_dx = random.choice([-3, 3])
+ball_dy = 5
 
-def handle():
-    global direction
+player = pygame.Rect(SCREEN_WIDTH // 2, SCREEN_HEGIHT - 40, 50, 15)
+player_dx = 0
+
+computer = pygame.Rect(SCREEN_WIDTH // 2,  40, 50, 15)
+
+player_score = 0
+computer_score = 0
+
+# 공 리셋 함수
+def reset_ball(center_x, center_y):
+    global ball, ball_dx, ball_dy
+    ball.x = center_x
+    ball.y = center_y
+    ball_dx = random.choice([-3, -2, -1, 1, 2, 3])
+    ball_dy = 5
+
+# 게임 리셋 함수
+def reset_score():
+    global player_score, computer_score
+    player_score = 0
+    computer_score = 0
+
+# 이벤트 함수
+def event():
+    global player_dx
+
     for event in pygame.event.get():
         if event.type == pygame.QUIT:
             return True
-        elif event.type == pygame.KEYDOWN:
-            if event.key == pygame.K_UP and direction != DOWN:
-                direction = UP
-            elif event.key == pygame.K_DOWN and direction != UP:
-                direction = DOWN
-            elif event.key == pygame.K_LEFT and direction != RIGHT:
-                direction = LEFT
-            elif event.key == pygame.K_RIGHT and direction != LEFT:
-                direction = RIGHT
+        if event.type == pygame.KEYDOWN:
+            if event.key == pygame.K_LEFT:
+                player_dx = -5
+            elif event.key == pygame.K_RIGHT:
+                player_dx = 5
+        if event.type == pygame.KEYUP:
+            if event.key in [pygame.K_LEFT, pygame.K_RIGHT]:
+                player_dx = 0
     return False
 
-def move():
-    global snake, length
-    head_x, head_y = snake[0]
-    dx, dy = direction
-    new_head = (head_x + dx * GRID_SIZE, head_y + dy * GRID_SIZE)
+# 게임 업데이트 함수
+def update_game():
+    global ball, ball_dx, ball_dy, player, player_dx, player_score, computer_score, computer
 
-    if (new_head in snake[2:] or
-        new_head[0] < 0 or new_head[0] >= SCREEN_WIDTH or
-        new_head[1] < 0 or new_head[1] >= SCREEN_HEIGHT):
-        sleep(1)
-        reset_game()
+    # 공 이동
+    ball.x = ball_dx + ball.x
+    ball.y = ball_dy + ball.y
+
+    # 공이 충돌한 경우
+    if ball.left < 0 or ball.right > SCREEN_WIDTH:
+        ball_dx = ball_dx * (-1)
+
+    # 플레이어 이동 
+    player.x = player.x + player_dx
+
+    # 플레이어가 화면 밖으로 이동한 경우
+    if player.left < 0:
+        player.left = 0 # player_dx = 0
+    if player.right > SCREEN_WIDTH:
+        player.right = SCREEN_WIDTH # player_dx = 0
+    
+    # 컴퓨터(적) 이동
+    if computer.centerx > ball.centerx:
+        computer.x = computer.x - 3
+    if computer.centerx < ball.centerx:
+        computer.x = computer.x + 3
+    
+    # 공이 플레이어/컴퓨터에 부딪혔을 때
+    if ball.colliderect(player):
+        ball_dy = ball_dy * (-1)
+        ball_dx = random.randint(-5, 5)
+        ball.bottom = player.top
+        ping_sound.play()
+
+    if ball.colliderect(computer):
+        ball_dy = ball_dy * (-1)
+        ball.top = computer.bottom
+        pong_sound.play()
+
+    # 점수 처리 
+    if ball.top < 0:
+        player_score += 1
+        reset_ball(player.centerx, player.centery)
+    elif ball.bottom > SCREEN_HEGIHT:
+        computer_score += 1
+        reset_ball(computer.centerx, computer.centery)
     else:
-        snake.insert(0, new_head)
-        if len(snake) > length:
-            snake.pop()
+        pass 
 
-def check():
-    global length, feed_pos
-    if snake[0] == feed_pos:
-        length += 1
-        return True
-    return False
+# 게임 메시지 
+def show_message(text, color):
+    label = font.render(text, True, color)
+    screen.blit(label, ((SCREEN_WIDTH - label.get_width()) // 2, (SCREEN_HEGIHT - label.get_height()) // 2))
+    pygame.display.update()
 
-def draw_info():
-    info = f"Length : {length}      Speed : {round(speed, 2)}"
-    font = pygame.font.SysFont('FixedSys', 30)
-    text = font.render(info, True, GRAY)
-    screen.blit(text, (10, 10))
+def draw():
+    screen.fill(BLUE)
 
-def draw_snake():
-    red, green, blue = 50 / max(length - 1, 1), 50, 150 / max(length - 1, 1)
-    for i, p in enumerate(snake):
-        color = (min(255, 100 + red * i), green, blue * i)
-        rect = pygame.Rect(p, (GRID_SIZE, GRID_SIZE))
-        pygame.draw.rect(screen, color, rect)
+    if player_score == 5:
+        show_message("승리", WHITE) 
+        reset_score()
+        pygame.time.wait(2000)
+    elif computer_score == 5:
+        show_message("패배", WHITE)
+        reset_score()
+        pygame.time.wait(2000)
+    else: 
+        pygame.draw.rect(screen, ORANGE, ball)
+        pygame.draw.rect(screen, RED, player)
+        pygame.draw.rect(screen, BLACK, computer)
 
-def draw_feed():
-    rect = pygame.Rect(feed_pos, (GRID_SIZE, GRID_SIZE))
-    pygame.draw.rect(screen, GREEN, rect)
+        for x in range(0, SCREEN_WIDTH, 24):
+            pygame.draw.rect(screen, WHITE, [x, SCREEN_HEGIHT//2, 10, 10])
 
-def create_feed():
-    while True:
-        x = random.randint(0, GRID_WIDTH - 1)
-        y = random.randint(0, GRID_HEIGHT - 1)
-        pos = (x * GRID_SIZE, y * GRID_SIZE)
-        if pos not in snake:
-            return pos
+        computer_label = font.render(str(computer_score), True, WHITE)
+        screen.blit(computer_label, (10, 220))
 
-def draw_screen():
-    screen.fill(WHITE)
-    draw_info()
-    draw_feed()
-    draw_snake()
+        player_label = font.render(str(player_score), True, WHITE)
+        screen.blit(player_label, (10, 340))
+    
     pygame.display.flip()
 
-def reset_game():
-    global snake, length, direction, feed_pos
-    snake = [(SCREEN_WIDTH // 2, SCREEN_HEIGHT // 2)]
-    direction = random.choice([UP, DOWN, RIGHT, LEFT])
-    length = 2
-    feed_pos = create_feed()
 
 def main():
-    global speed, feed_pos
-    feed_pos = create_feed()
-    running = True
-
-    while running:
-        running = not handle()
-        move()
-        if check():
-            feed_pos = create_feed()
-        speed = min(30, (10 + length) / 2)
-        draw_screen()
-        clock.tick(speed)
+    running = False
+    while not running:
+        running = event()
+        update_game()
+        draw()
+        clock.tick(FPS)
 
     pygame.quit()
 
