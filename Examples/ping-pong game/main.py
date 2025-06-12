@@ -25,7 +25,9 @@ pygame.mixer.init()
 current_path = os.path.dirname(__file__)
 assets_path = os.path.join(current_path, 'assets')
 
-bounce_sound = pygame.mixer.Sound(os.path.join(assets_path, 'bgm.mp3'))
+pygame.mixer.music.load(os.path.join(assets_path, 'bgm.mp3'))
+pygame.mixer.music.play(-1)  # 무한 반복 재생
+
 ping_sound = pygame.mixer.Sound(os.path.join(assets_path, 'ping.mp3'))
 pong_sound = pygame.mixer.Sound(os.path.join(assets_path, 'pong.mp3'))
 
