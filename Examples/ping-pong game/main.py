@@ -119,3 +119,70 @@ def update_game():
         ball_dy = ball_dy * (-1)
         ball.top = computer.bottom
         pong_sound.play()
+
+    if ball.top < 0 :
+        player_score = player_score + 1
+        reset_ball(player.centerx, player.centery) 
+
+    elif ball.bottom > SCREEN_HEGIHT :
+        computer_score += 1
+        reset_ball(computer.centerx, computer.centery)
+
+
+#게임 메세지 출력 함수     
+def show_message(text, color) :
+    label = font.render(text, True, color)
+    screen.blit(label, ((SCREEN_WIDTH - label.get_width()) // 2, (SCREEN_HEGIHT - label.get_height()) // 2))
+    pygame.display.update()
+
+#게임 그리기 함수
+def draw() :
+    #스크린 지정
+    screen.fill(BLUE)
+
+    #플레이어가 이겼을 경우
+    if player_score == 5:
+       show_message("승리", WHITE)
+       reset_score()
+       pygame.time.wait(2000)
+
+    #적이 이겼을 경우
+    elif computer_score == 5:
+        show_message("패배", WHITE)
+        reset_score()
+        pygame.time.wait(2000)
+
+    #아무 상황도 아닌경우 = 게임이 진행되고 있을때때
+    else :
+        pygame.draw.rect(screen, ORANGE, ball)
+        pygame.draw.rect(screen, RED, player)
+        pygame.draw.rect(screen, BLACK, enemy)
+
+        #점선
+        for x in range(0, SCREEN_WIDTH, 24) :
+            pygame.draw.rect(screen, WHITE, [x, SCREEN_HEGIHT//2, 10, 10])
+
+        #점수출력
+        enemy_label = font.render(str(enemy_score), True, WHITE)
+        screen.blit(enemy_label, (10, 220))
+
+        player_label = font.render(str(player_score), True, WHITE)
+        screen.blit(player_label, (10, 340))
+
+    #게임 화면 업데이트
+    pygame.display.flip()
+
+#메인 함수
+def main() :
+    done = False 
+    while not done :
+        done = event()
+        update_game()
+        draw()
+        clock.tick(FPS)
+        
+    pygame.quit()
+
+#시작점을 알려주는 조건문
+if __name__ == '__main__' :
+    main()
